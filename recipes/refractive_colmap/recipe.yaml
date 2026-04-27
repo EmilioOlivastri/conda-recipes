@@ -3,7 +3,7 @@ schema_version: 1
 
 context:
   name: refractive_colmap
-  version: "4.0.3"
+  version: "3.9.0"
   build_number: 0
 
   cuda: ${{ "enabled" if cuda_compiler_version != "None" else "disabled" }}
@@ -38,35 +38,25 @@ requirements:
     - ${{ compiler('c') }}
     - ${{ stdlib("c") }}
     - if: cuda == "enabled"
-      then: ${{ compiler('cuda') }}
+      then: cuda-nvcc
     - cmake
-    - if: unix
-      then: make
+    - make
     - pkg-config
     - ninja
-    - if: osx
-      then: llvm-openmp
-    - if: linux
-      then: libgomp
-    - if: win
-      then: m2-sed
+    - libgomp
   host:
-    - if: unix
-      then:
-        - xorg-libxext
-        - xorg-libxdmcp
-        - xorg-libxau
-        - libxcb
-        - xorg-libxfixes
-        - xorg-libxrender
-        - xorg-libx11
-        - xorg-libice
-        - xorg-libsm
-    - if: linux
-      then:
-        - libglu
-        - libgl-devel
-        - libopengl-devel
+    - xorg-libxext
+    - xorg-libxdmcp
+    - xorg-libxau
+    - libxcb
+    - xorg-libxfixes
+    - xorg-libxrender
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libsm
+    - libglu
+    - libgl-devel
+    - libopengl-devel
     - libblas
     - libcblas
     - libboost-devel
@@ -79,16 +69,12 @@ requirements:
     - glew
     - cgal-cpp
     - ceres-solver
-    - if: cuda == "enabled"
-      then: ceres-solver * [build="gpu*"]
     - qt-main
     - git
     - flann
     - sqlite
-    - if: unix
-      then:
-        - vlfeat
-        - gmp
+    - vlfeat
+    - gmp
     - lz4-c
     - metis
     - openimageio
@@ -96,55 +82,38 @@ requirements:
     - faiss
     - if: cuda == "enabled"
       then:
+        - cuda-cudart
         - libcurand-dev
         - cuda-cudart-dev
         - cuda-version ==${{ cuda_compiler_version }}
         - faiss-gpu
-    - if: osx
-      then: llvm-openmp
-    - if: linux
-      then: libgomp
-    - if: not (osx and x86_64)
-      then:
-        - onnxruntime
-        - onnxruntime-cpp
+    - libgomp
   run:
     - flann
     - if: cuda == "enabled"
       then:
         - __cuda >=${{ cuda_compiler_version }}  # needed to ensure cuda packages are only installed in cuda environments and fallback to cpu builds otherwise
-    - if: unix
-      then:
-        - xorg-libxext
-        - xorg-libxdmcp
-        - xorg-libxau
-        - libxcb
-        - xorg-libxfixes
-        - xorg-libxrender
-        - xorg-libx11
-        - xorg-libice
-        - xorg-libsm
-        - vlfeat
-    - if: linux
-      then: libglu
+    - xorg-libxext
+    - xorg-libxdmcp
+    - xorg-libxau
+    - libxcb
+    - xorg-libxfixes
+    - xorg-libxrender
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libsm
+    - vlfeat
+    - libglu
   run_exports:
     - ${{ pin_subpackage('refractive_colmap', upper_bound='x.x') }}
 
 tests:
   - script:
-      - if: win
-        then:
-          - if exist %PREFIX%\\Library\\bin\\colmap.exe (exit 0) else (exit 1)
-          - if exist %PREFIX%\\Library\\lib\\colmap_exe.lib (exit 0) else (exit 1)
-          - if: cuda == "enabled"
-            then: if exist %PREFIX%\\Library\\lib\\colmap_cuda.lib (exit 0) else (exit 1)
-      - if: unix
-        then:
-          - test -f $PREFIX/bin/colmap
-          - test -f $PREFIX/lib/libcolmap_exe.a
-          - test -f $PREFIX/share/colmap/colmap-config.cmake
-          - if: cuda == "enabled"
-            then: test -f $PREFIX/lib/libcolmap_util_cuda.a
+      - test -f $PREFIX/bin/colmap
+      - test -f $PREFIX/lib/libcolmap_exe.a
+      - test -f $PREFIX/share/colmap/colmap-config.cmake
+      - if: cuda == "enabled"
+        then: test -f $PREFIX/lib/libcolmap_util_cuda.a
 
 about:
   license: BSD-3-Clause
@@ -154,9 +123,9 @@ about:
     - src/thirdparty/PoissonRecon/LICENSE
     - src/thirdparty/SiftGPU/LICENSE
     - src/thirdparty/VLFeat/LICENSE
-  summary: COLMAP is a general-purpose Structure-from-Motion (SfM) and Multi-View Stereo (MVS) pipeline with a graphical and command-line interface.
-  homepage: https://colmap.github.io/
+  summary: This project extends COLMAP to support Refractive Structure-from-Motion (RSfM) when utilizing cameras underwater with waterproof housings, including both flat-ports and dome-ports.
+  homepage: https://cau-git.rz.uni-kiel.de/inf-ag-koeser/colmap_underwater
 
 extra:
   recipe-maintainers:
-    - Tobias-Fischer
+    - EmilioOlivastri 

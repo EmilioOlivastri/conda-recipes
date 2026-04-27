@@ -7,11 +7,15 @@ version = "0.1.0"
 
 [tasks]
 update_recipe = "python3 update_sha256.py"
-upload = "binstar upload -u nmarticorena " # TO BE UPDATED WITH YOUR ANACONDA USERNAME
 
 [tasks.build]
 cmd = "rattler-build build --recipe-dir ./recipes/{{ name }} -m ./recipes/{{ name }}/variant_configuration.yaml --skip-existing"
 description = "Build a single package from the recipes directory. Usage: pixi build_one --name <package_name>"
+args = [{"arg" = "name"}]
+
+[tasks.upload]
+cmd = "binstar upload -u emilioolivastri ./output/linux-64/{{ name }}*.conda"
+description = "Upload a single package from the output directory. Usage: pixi run upload --name <package_name>. Works only for linux-64 packages."
 args = [{"arg" = "name"}]
 
 [dependencies]
