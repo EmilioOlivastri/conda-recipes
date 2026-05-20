@@ -1,0 +1,127 @@
+# Prioritize gpu build if cudatoolkit can be installed (through __cuda virtual package)
+schema_version: 1
+
+context:
+  name: calibmar
+  version: "1.0.0"
+  build_number: 0
+
+  cuda: ${{ "enabled" if cuda_compiler_version != "None" else "disabled" }}
+  cuda_build_string: cuda_${{ cuda_compiler_version | version_to_buildstring }}
+  string_prefix: ${{ cuda_build_string if cuda ==  "enabled" else "cpu_" }}
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  - git: https://github.com/EmilioOlivastri/calibmar.git
+    rev: 429fe4ecfeb1b2f91b2a9300af4b58b038c1d993
+
+build:
+  number: ${{ build_number }}
+  string: ${{ string_prefix }}h${{ hash }}_${{ build_number }}
+  variant:
+    use_keys:
+      # use cuda from the variant config, e.g. to build multiple CUDA variants
+      - ${{ "cuda" if cuda == "enabled" }}
+    # this will down-prioritize the cpu variant versus other variants of the package
+    down_prioritize_variant: ${{ 0 if cuda == "enabled" else 1 }}
+  script:
+    file: build
+    env:
+      package_version: ${{ version }}
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - if: cuda == "enabled"
+      then: cuda-nvcc
+    - cmake
+    - make
+    - pkg-config
+    - ninja
+    - libgomp
+  host:
+    - xorg-libxext
+    - xorg-libxdmcp
+    - xorg-libxau
+    - libxcb
+    - xorg-libxfixes
+    - xorg-libxrender
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libsm
+    - libglu
+    - libgl-devel
+    - libopengl-devel
+    - libblas
+    - libcblas
+    - libboost-devel
+    - suitesparse
+    - eigen
+    - eigen-abi-devel
+    - freeimage
+    - glog
+    - gflags
+    - glew
+    - cgal-cpp
+    - ceres-solver
+    - qt-main
+    - git
+    - flann
+    - sqlite
+    - vlfeat
+    - gmp
+    - lz4-c
+    - metis
+    - openimageio
+    - poselib
+    - faiss
+    - opencv
+    - if: cuda == "enabled"
+      then:
+        - cuda-cudart
+        - libcurand-dev
+        - cuda-cudart-dev
+        - cuda-version ==${{ cuda_compiler_version }}
+        - faiss-gpu
+    - libgomp
+  run:
+    - flann
+    - if: cuda == "enabled"
+      then:
+        - __cuda >=${{ cuda_compiler_version }}  # needed to ensure cuda packages are only installed in cuda environments and fallback to cpu builds otherwise
+    - xorg-libxext
+    - xorg-libxdmcp
+    - xorg-libxau
+    - libxcb
+    - xorg-libxfixes
+    - xorg-libxrender
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libsm
+    - vlfeat
+    - libglu
+    - libboost
+    - opencv
+  run_exports:
+    - ${{ pin_subpackage('calibmar', upper_bound='x.x') }}
+
+tests:
+  - script:
+      - test -f $PREFIX/bin/calibmar
+      - test -f $PREFIX/bin/undistorter
+
+about:
+  license: BSD-3-Clause
+  license_file:
+    - LICENSE.txt
+  summary: This project performs calibration of underwater camera rigs, including both flat-ports and dome-ports.
+  homepage: https://cau-git.rz.uni-kiel.de/inf-ag-koeser/calibmar
+
+extra:
+  recipe-maintainers:
+    - EmilioOlivastri 
