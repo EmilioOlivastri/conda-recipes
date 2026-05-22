@@ -3,7 +3,7 @@ schema_version: 1
 
 context:
   name: calibmar
-  version: "1.0.0"
+  version: "1.1.0"
   build_number: 0
 
   cuda: ${{ "enabled" if cuda_compiler_version != "None" else "disabled" }}
@@ -16,7 +16,7 @@ package:
 
 source:
   - git: https://github.com/EmilioOlivastri/calibmar.git
-    rev: 429fe4ecfeb1b2f91b2a9300af4b58b038c1d993
+    rev: 3f5beb341cbc7a19bbf917e9b329dd383c413ed7
 
 build:
   number: ${{ build_number }}
@@ -114,6 +114,7 @@ tests:
   - script:
       - test -f $PREFIX/bin/calibmar
       - test -f $PREFIX/bin/undistorter
+      - test -f $PREFIX/bin/housing_calib
 
 about:
   license: BSD-3-Clause
